@@ -15,39 +15,18 @@ import com.owlike.genson.annotation.JsonProperty;
 public final class Invoice {
 
     @Property()
-    private final String rechnungsnummer;
+    private final String invoiceNumber;
     
     @Property()
-    private final Boolean empfangen;
-
-    @Property()
-    private final String color;
-
-    @Property()
-    private final String owner;
-
-
-    public String getColor() {
-        return color;
-    }
-
-    public String getOwner() {
-        return owner;
-    }
+    private final Boolean received;
     
-    public String getRechnungsnummer() {
-        return rechnungsnummer;
-    }
+    @Property()
+    private final Boolean sell;
 
-    public Boolean getEmpfangen() {
-        return empfangen;
-    }
-
-    public Invoice(@JsonProperty("rechnungsnummer") final String rechnungsnummer, @JsonProperty("empfangen") final Boolean empfangen, @JsonProperty("color") final String color, @JsonProperty("owner") final String owner) {
-        this.rechnungsnummer = rechnungsnummer;
-        this.color = color;
-        this.owner = owner;
-        this.empfangen = empfangen;
+    public Invoice(@JsonProperty("invoiceNumber") final String invoceNumber, @JsonProperty("received") final Boolean received, @JsonProperty("sell") final Boolean sell) {
+        this.invoiceNumber = invoceNumber;
+        this.received = received;
+        this.sell = sell;
     }
 
     @Override
@@ -62,18 +41,30 @@ public final class Invoice {
 
         Invoice other = (Invoice) obj;
 
-        return Objects.deepEquals(new String[] {getRechnungsnummer(), getEmpfangen() + "",  getColor(), getOwner()},
-                new String[]                   {other.getRechnungsnummer(), other.getEmpfangen() + "", other.getColor(), other.getOwner()});
+        return Objects.deepEquals(new String[] {getInvoiceNumber(), getSell() + "",  getReceived() + ""},
+                new String[]{other.getInvoiceNumber(), other.getSell() + "",  other.getReceived() + ""});
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getRechnungsnummer(), getEmpfangen() + "", getColor(), getOwner());
+        return Objects.hash(getInvoiceNumber(), getSell(), getReceived());
     }
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()) + " [rechnungsnummer=" + rechnungsnummer + ", empfangen="
-                + empfangen + ", color=" + color + ", owner=" + owner + "]";
+        return this.getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()) + " [invoiceNumber=" + invoiceNumber + ", received="
+                + received + ", sell=" + sell + "]";
+    }
+
+    public String getInvoiceNumber() {
+        return invoiceNumber;
+    }
+
+    public Boolean getReceived() {
+        return received;
+    }
+
+    public Boolean getSell() {
+        return sell;
     }
 }
