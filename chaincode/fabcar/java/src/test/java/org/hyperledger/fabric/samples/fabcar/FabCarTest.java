@@ -54,25 +54,19 @@ public final class FabCarTest {
 
     }
 
-    private final class MockCarResultsIterator implements QueryResultsIterator<KeyValue> {
+    private final class MockInvoiceResultsIterator implements QueryResultsIterator<KeyValue> {
 
         private final List<KeyValue> carList;
 
-        MockCarResultsIterator() {
+        MockInvoiceResultsIterator() {
             super();
 
             carList = new ArrayList<KeyValue>();
 
             carList.add(new MockKeyValue("CAR0",
-                    "{\"color\":\"blue\",\"make\":\"Toyota\",\"model\":\"Prius\",\"owner\":\"Tomoko\"}"));
+                    "{ \"rechnungsnummer\": \"Toyota\", \"empfangen\": false, \"color\": \"blue\", \"owner\": \"Tomoko\" }"));
             carList.add(new MockKeyValue("CAR1",
-                    "{\"color\":\"red\",\"make\":\"Ford\",\"model\":\"Mustang\",\"owner\":\"Brad\"}"));
-            carList.add(new MockKeyValue("CAR2",
-                    "{\"color\":\"green\",\"make\":\"Hyundai\",\"model\":\"Tucson\",\"owner\":\"Jin Soo\"}"));
-            carList.add(new MockKeyValue("CAR7",
-                    "{\"color\":\"violet\",\"make\":\"Fiat\",\"model\":\"Punto\",\"owner\":\"Pari\"}"));
-            carList.add(new MockKeyValue("CAR9",
-                    "{\"color\":\"brown\",\"make\":\"Holden\",\"model\":\"Barina\",\"owner\":\"Shotaro\"}"));
+                    "{ \"rechnungsnummer\": \"Ford\", \"empfangen\": false, \"color\": \"red\", \"owner\": \"Brad\" }"));
         }
 
         @Override
@@ -89,7 +83,7 @@ public final class FabCarTest {
 
     @Test
     public void invokeUnknownTransaction() {
-        FabCar contract = new FabCar();
+        FabInvoice contract = new FabInvoice();
         Context ctx = mock(Context.class);
 
         Throwable thrown = catchThrowable(() -> {
@@ -104,43 +98,43 @@ public final class FabCarTest {
     }
 
     @Nested
-    class InvokeQueryCarTransaction {
+    class InvokeQueryInvoiceTransaction {
 
         @Test
-        public void whenCarExists() {
-            FabCar contract = new FabCar();
+        public void whenInvoiceExists() {
+            FabInvoice contract = new FabInvoice();
             Context ctx = mock(Context.class);
             ChaincodeStub stub = mock(ChaincodeStub.class);
             when(ctx.getStub()).thenReturn(stub);
             when(stub.getStringState("CAR0"))
-                    .thenReturn("{\"color\":\"blue\",\"make\":\"Toyota\",\"model\":\"Prius\",\"owner\":\"Tomoko\"}");
+                    .thenReturn("{ \"rechnungsnummer\": \"Toyota\", \"empfangen\": false, \"color\": \"blue\", \"owner\": \"Tomoko\" }");
 
-            Car car = contract.queryCar(ctx, "CAR0");
+            Invoice car = contract.queryInvoice(ctx, "CAR0");
 
-            assertThat(car).isEqualTo(new Car("Toyota", "Prius", "blue", "Tomoko"));
+            assertThat(car).isEqualTo(new Invoice("Toyota", false, "blue", "Tomoko"));
         }
 
         @Test
-        public void whenCarDoesNotExist() {
-            FabCar contract = new FabCar();
+        public void whenInvoiceDoesNotExist() {
+            FabInvoice contract = new FabInvoice();
             Context ctx = mock(Context.class);
             ChaincodeStub stub = mock(ChaincodeStub.class);
             when(ctx.getStub()).thenReturn(stub);
             when(stub.getStringState("CAR0")).thenReturn("");
 
             Throwable thrown = catchThrowable(() -> {
-                contract.queryCar(ctx, "CAR0");
+                contract.queryInvoice(ctx, "CAR0");
             });
 
             assertThat(thrown).isInstanceOf(ChaincodeException.class).hasNoCause()
-                    .hasMessage("Car CAR0 does not exist");
+                    .hasMessage("Invoice CAR0 does not exist");
             assertThat(((ChaincodeException) thrown).getPayload()).isEqualTo("CAR_NOT_FOUND".getBytes());
         }
     }
 
     @Test
     void invokeInitLedgerTransaction() {
-        FabCar contract = new FabCar();
+        FabInvoice contract = new FabInvoice();
         Context ctx = mock(Context.class);
         ChaincodeStub stub = mock(ChaincodeStub.class);
         when(ctx.getStub()).thenReturn(stub);
@@ -149,113 +143,99 @@ public final class FabCarTest {
 
         InOrder inOrder = inOrder(stub);
         inOrder.verify(stub).putStringState("CAR0",
-                "{\"color\":\"blue\",\"make\":\"Toyota\",\"model\":\"Prius\",\"owner\":\"Tomoko\"}");
+                "{ \"rechnungsnummer\": \"Toyota\", \"empfangen\": false, \"color\": \"blue\", \"owner\": \"Tomoko\" }");
         inOrder.verify(stub).putStringState("CAR1",
-                "{\"color\":\"red\",\"make\":\"Ford\",\"model\":\"Mustang\",\"owner\":\"Brad\"}");
-        inOrder.verify(stub).putStringState("CAR2",
-                "{\"color\":\"green\",\"make\":\"Hyundai\",\"model\":\"Tucson\",\"owner\":\"Jin Soo\"}");
-        inOrder.verify(stub).putStringState("CAR3",
-                "{\"color\":\"yellow\",\"make\":\"Volkswagen\",\"model\":\"Passat\",\"owner\":\"Max\"}");
-        inOrder.verify(stub).putStringState("CAR4",
-                "{\"color\":\"black\",\"make\":\"Tesla\",\"model\":\"S\",\"owner\":\"Adrian\"}");
-        inOrder.verify(stub).putStringState("CAR5",
-                "{\"color\":\"purple\",\"make\":\"Peugeot\",\"model\":\"205\",\"owner\":\"Michel\"}");
-        inOrder.verify(stub).putStringState("CAR6",
-                "{\"color\":\"white\",\"make\":\"Chery\",\"model\":\"S22L\",\"owner\":\"Aarav\"}");
-        inOrder.verify(stub).putStringState("CAR7",
-                "{\"color\":\"violet\",\"make\":\"Fiat\",\"model\":\"Punto\",\"owner\":\"Pari\"}");
-        inOrder.verify(stub).putStringState("CAR8",
-                "{\"color\":\"indigo\",\"make\":\"Tata\",\"model\":\"nano\",\"owner\":\"Valeria\"}");
-        inOrder.verify(stub).putStringState("CAR9",
-                "{\"color\":\"brown\",\"make\":\"Holden\",\"model\":\"Barina\",\"owner\":\"Shotaro\"}");
+                "{ \"rechnungsnummer\": \"Ford\", \"empfangen\": false, \"color\": \"red\", \"owner\": \"Brad\" }");
     }
 
     @Nested
-    class InvokeCreateCarTransaction {
+    class InvokeCreateInvoiceTransaction {
 
         @Test
-        public void whenCarExists() {
-            FabCar contract = new FabCar();
+        public void whenInvoiceExists() {
+            FabInvoice contract = new FabInvoice();
             Context ctx = mock(Context.class);
             ChaincodeStub stub = mock(ChaincodeStub.class);
             when(ctx.getStub()).thenReturn(stub);
             when(stub.getStringState("CAR0"))
-                    .thenReturn("{\"color\":\"blue\",\"make\":\"Toyota\",\"model\":\"Prius\",\"owner\":\"Tomoko\"}");
+                    .thenReturn("{ \"rechnungsnummer\": \"Toyota\", \"empfangen\": false, \"color\": \"blue\", \"owner\": \"Tomoko\" }");
 
             Throwable thrown = catchThrowable(() -> {
-                contract.createCar(ctx, "CAR0", "Nissan", "Leaf", "green", "Siobhán");
+                contract.createInvoice(ctx, "CAR0", "Nissan",  false, "green", "Siobhán");
             });
 
             assertThat(thrown).isInstanceOf(ChaincodeException.class).hasNoCause()
-                    .hasMessage("Car CAR0 already exists");
+                    .hasMessage("Invoice CAR0 already exists");
             assertThat(((ChaincodeException) thrown).getPayload()).isEqualTo("CAR_ALREADY_EXISTS".getBytes());
         }
 
         @Test
-        public void whenCarDoesNotExist() {
-            FabCar contract = new FabCar();
+        public void whenInvoiceDoesNotExist() {
+            FabInvoice contract = new FabInvoice();
             Context ctx = mock(Context.class);
             ChaincodeStub stub = mock(ChaincodeStub.class);
             when(ctx.getStub()).thenReturn(stub);
             when(stub.getStringState("CAR0")).thenReturn("");
 
-            Car car = contract.createCar(ctx, "CAR0", "Nissan", "Leaf", "green", "Siobhán");
+            Invoice car = contract.createInvoice(ctx, "CAR0", "Nissan",  false, "green", "Siobhán");
 
-            assertThat(car).isEqualTo(new Car("Nissan", "Leaf", "green", "Siobhán"));
+            assertThat(car).isEqualTo(new Invoice("Nissan",  false, "green", "Siobhán"));
         }
     }
 
     @Test
-    void invokeQueryAllCarsTransaction() {
-        FabCar contract = new FabCar();
+    void invokeQueryAllInvoicesTransaction() {
+        FabInvoice contract = new FabInvoice();
         Context ctx = mock(Context.class);
         ChaincodeStub stub = mock(ChaincodeStub.class);
         when(ctx.getStub()).thenReturn(stub);
-        when(stub.getStateByRange("CAR0", "CAR999")).thenReturn(new MockCarResultsIterator());
+        when(stub.getStateByRange("CAR0", "CAR999")).thenReturn(new MockInvoiceResultsIterator());
 
-        CarQueryResult[] cars = contract.queryAllCars(ctx);
+        InvoiceQueryResult[] cars = contract.queryAllInvoices(ctx);
 
-        final List<CarQueryResult> expectedCars = new ArrayList<CarQueryResult>();
-        expectedCars.add(new CarQueryResult("CAR0", new Car("Toyota", "Prius", "blue", "Tomoko")));
-        expectedCars.add(new CarQueryResult("CAR1", new Car("Ford", "Mustang", "red", "Brad")));
-        expectedCars.add(new CarQueryResult("CAR2", new Car("Hyundai", "Tucson", "green", "Jin Soo")));
-        expectedCars.add(new CarQueryResult("CAR7", new Car("Fiat", "Punto", "violet", "Pari")));
-        expectedCars.add(new CarQueryResult("CAR9", new Car("Holden", "Barina", "brown", "Shotaro")));
+        final List<InvoiceQueryResult> expectedInvoices = new ArrayList<InvoiceQueryResult>();
+        expectedInvoices.add(new InvoiceQueryResult("CAR0", new Invoice("Toyota", false, "blue", "Tomoko")));
+        expectedInvoices.add(new InvoiceQueryResult("CAR1", new Invoice("Ford",  false, "red", "Brad")));
 
-        assertThat(cars).containsExactlyElementsOf(expectedCars);
+        for (int i = 0; i < cars.length; i++) {
+            InvoiceQueryResult invoiceQueryResult = cars[i];
+            System.out.println(invoiceQueryResult);
+        }
+                
+        assertThat(cars).containsExactlyElementsOf(expectedInvoices);
     }
 
     @Nested
-    class ChangeCarOwnerTransaction {
+    class ChangeInvoiceOwnerTransaction {
 
         @Test
-        public void whenCarExists() {
-            FabCar contract = new FabCar();
+        public void whenInvoiceExists() {
+            FabInvoice contract = new FabInvoice();
             Context ctx = mock(Context.class);
             ChaincodeStub stub = mock(ChaincodeStub.class);
             when(ctx.getStub()).thenReturn(stub);
             when(stub.getStringState("CAR0"))
-                    .thenReturn("{\"color\":\"blue\",\"make\":\"Toyota\",\"model\":\"Prius\",\"owner\":\"Tomoko\"}");
+                    .thenReturn("{ \"rechnungsnummer\": \"Toyota\", \"empfangen\": false, \"color\": \"blue\", \"owner\": \"Tomoko\" }");
 
-            Car car = contract.changeCarOwner(ctx, "CAR0", "Dr Evil");
+            Invoice car = contract.changeInvoiceOwner(ctx, "CAR0", "Dr Evil");
 
-            assertThat(car).isEqualTo(new CarQueryResult("CAR0", new Car("Toyota", "Prius", "blue", "Dr Evil")));
+            assertThat(car).isEqualTo(new InvoiceQueryResult("CAR0", new Invoice("Toyota",  false, "blue", "Dr Evil")));
         }
 
         @Test
-        public void whenCarDoesNotExist() {
-            FabCar contract = new FabCar();
+        public void whenInvoiceDoesNotExist() {
+            FabInvoice contract = new FabInvoice();
             Context ctx = mock(Context.class);
             ChaincodeStub stub = mock(ChaincodeStub.class);
             when(ctx.getStub()).thenReturn(stub);
             when(stub.getStringState("CAR0")).thenReturn("");
 
             Throwable thrown = catchThrowable(() -> {
-                contract.changeCarOwner(ctx, "CAR0", "Dr Evil");
+                contract.changeInvoiceOwner(ctx, "CAR0", "Dr Evil");
             });
 
             assertThat(thrown).isInstanceOf(ChaincodeException.class).hasNoCause()
-                    .hasMessage("Car CAR0 does not exist");
+                    .hasMessage("Invoice CAR0 does not exist");
             assertThat(((ChaincodeException) thrown).getPayload()).isEqualTo("CAR_NOT_FOUND".getBytes());
         }
     }

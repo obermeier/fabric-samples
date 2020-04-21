@@ -9,22 +9,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-public final class CarTest {
+public final class InvoiceTest {
 
     @Nested
     class Equality {
 
         @Test
         public void isReflexive() {
-            Car car = new Car("Toyota", "Prius", "blue", "Tomoko");
+            Invoice car = new Invoice("Toyota", false, "blue", "Tomoko");
 
             assertThat(car).isEqualTo(car);
         }
 
         @Test
         public void isSymmetric() {
-            Car carA = new Car("Toyota", "Prius", "blue", "Tomoko");
-            Car carB = new Car("Toyota", "Prius", "blue", "Tomoko");
+            Invoice carA = new Invoice("Toyota", false, "blue", "Tomoko");
+            Invoice carB = new Invoice("Toyota", false, "blue", "Tomoko");
 
             assertThat(carA).isEqualTo(carB);
             assertThat(carB).isEqualTo(carA);
@@ -32,9 +32,9 @@ public final class CarTest {
 
         @Test
         public void isTransitive() {
-            Car carA = new Car("Toyota", "Prius", "blue", "Tomoko");
-            Car carB = new Car("Toyota", "Prius", "blue", "Tomoko");
-            Car carC = new Car("Toyota", "Prius", "blue", "Tomoko");
+            Invoice carA = new Invoice("Toyota", false, "blue", "Tomoko");
+            Invoice carB = new Invoice("Toyota", false, "blue", "Tomoko");
+            Invoice carC = new Invoice("Toyota", false, "blue", "Tomoko");
 
             assertThat(carA).isEqualTo(carB);
             assertThat(carB).isEqualTo(carC);
@@ -43,15 +43,15 @@ public final class CarTest {
 
         @Test
         public void handlesInequality() {
-            Car carA = new Car("Toyota", "Prius", "blue", "Tomoko");
-            Car carB = new Car("Ford", "Mustang", "red", "Brad");
+            Invoice carA = new Invoice("Toyota", false, "blue", "Tomoko");
+            Invoice carB = new Invoice("Ford", false, "red", "Brad");
 
             assertThat(carA).isNotEqualTo(carB);
         }
 
         @Test
         public void handlesOtherObjects() {
-            Car carA = new Car("Toyota", "Prius", "blue", "Tomoko");
+            Invoice carA = new Invoice("Toyota", false, "blue", "Tomoko");
             String carB = "not a car";
 
             assertThat(carA).isNotEqualTo(carB);
@@ -59,16 +59,15 @@ public final class CarTest {
 
         @Test
         public void handlesNull() {
-            Car car = new Car("Toyota", "Prius", "blue", "Tomoko");
+            Invoice car = new Invoice("Toyota", false, "blue", "Tomoko");
 
             assertThat(car).isNotEqualTo(null);
         }
     }
 
     @Test
-    public void toStringIdentifiesCar() {
-        Car car = new Car("Toyota", "Prius", "blue", "Tomoko");
-
-        assertThat(car.toString()).isEqualTo("Car@61a77e4f [make=Toyota, model=Prius, color=blue, owner=Tomoko]");
+    public void toStringIdentifiesInvoice() {
+        Invoice car = new Invoice("Toyota", false, "blue", "Tomoko");
+        assertThat(car.toString()).isEqualTo("Invoice@4847b51f [rechnungsnummer=Toyota, empfangen=false, color=blue, owner=Tomoko]");
     }
 }

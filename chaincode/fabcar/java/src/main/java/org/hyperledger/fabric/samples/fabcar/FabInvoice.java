@@ -23,13 +23,13 @@ import org.hyperledger.fabric.shim.ledger.QueryResultsIterator;
 import com.owlike.genson.Genson;
 
 /**
- * Java implementation of the Fabric Car Contract described in the Writing Your
+ * Java implementation of the Fabric Invoice Contract described in the Writing Your
  * First Application tutorial
  */
 @Contract(
-        name = "FabCar",
+        name = "FabInvoice",
         info = @Info(
-                title = "FabCar contract",
+                title = "FabInvoice contract",
                 description = "The hyperlegendary car contract",
                 version = "0.0.1-SNAPSHOT",
                 license = @License(
@@ -37,14 +37,14 @@ import com.owlike.genson.Genson;
                         url = "http://www.apache.org/licenses/LICENSE-2.0.html"),
                 contact = @Contact(
                         email = "f.carr@example.com",
-                        name = "F Carr",
+                        name = "F Invoicer",
                         url = "https://hyperledger.example.com")))
 @Default
-public final class FabCar implements ContractInterface {
+public final class FabInvoice implements ContractInterface {
 
     private final Genson genson = new Genson();
 
-    private enum FabCarErrors {
+    private enum FabInvoiceErrors {
         CAR_NOT_FOUND,
         CAR_ALREADY_EXISTS
     }
@@ -54,26 +54,26 @@ public final class FabCar implements ContractInterface {
      *
      * @param ctx the transaction context
      * @param key the key
-     * @return the Car found on the ledger if there was one
+     * @return the Invoice found on the ledger if there was one
      */
     @Transaction()
-    public Car queryCar(final Context ctx, final String key) {
+    public Invoice queryInvoice(final Context ctx, final String key) {
         ChaincodeStub stub = ctx.getStub();
         String carState = stub.getStringState(key);
 
         if (carState.isEmpty()) {
-            String errorMessage = String.format("Car %s does not exist", key);
+            String errorMessage = String.format("Invoice %s does not exist", key);
             System.out.println(errorMessage);
-            throw new ChaincodeException(errorMessage, FabCarErrors.CAR_NOT_FOUND.toString());
+            throw new ChaincodeException(errorMessage, FabInvoiceErrors.CAR_NOT_FOUND.toString());
         }
 
-        Car car = genson.deserialize(carState, Car.class);
+        Invoice car = genson.deserialize(carState, Invoice.class);
 
         return car;
     }
 
     /**
-     * Creates some initial Cars on the ledger.
+     * Creates some initial Invoices on the ledger.
      *
      * @param ctx the transaction context
      */
@@ -82,24 +82,17 @@ public final class FabCar implements ContractInterface {
         ChaincodeStub stub = ctx.getStub();
 
         String[] carData = {
-                "{ \"make\": \"Toyota\", \"model\": \"Prius\", \"color\": \"blue\", \"owner\": \"Tomoko\" }",
-                "{ \"make\": \"Ford\", \"model\": \"Mustang\", \"color\": \"red\", \"owner\": \"Brad\" }",
-                "{ \"make\": \"Hyundai\", \"model\": \"Tucson\", \"color\": \"green\", \"owner\": \"Jin Soo\" }",
-                "{ \"make\": \"Volkswagen\", \"model\": \"Passat\", \"color\": \"yellow\", \"owner\": \"Max\" }",
-                "{ \"make\": \"Tesla\", \"model\": \"S\", \"color\": \"black\", \"owner\": \"Adrian\" }",
-                "{ \"make\": \"Peugeot\", \"model\": \"205\", \"color\": \"purple\", \"owner\": \"Michel\" }",
-                "{ \"make\": \"Chery\", \"model\": \"S22L\", \"color\": \"white\", \"owner\": \"Aarav\" }",
-                "{ \"make\": \"Fiat\", \"model\": \"Punto\", \"color\": \"violet\", \"owner\": \"Pari\" }",
-                "{ \"make\": \"Tata\", \"model\": \"nano\", \"color\": \"indigo\", \"owner\": \"Valeria\" }",
-                "{ \"make\": \"Holden\", \"model\": \"Barina\", \"color\": \"brown\", \"owner\": \"Shotaro\" }"
+                "{\"color\":\"blue\",\"empfangen\":false,\"owner\":\"Tomoko\",\"rechnungsnummer\":\"Toyota\"}",
+                "{\"color\":\"red\",\"empfangen\":false,\"owner\":\"Brad\",\"rechnungsnummer\":\"Ford\"}"
         };
 
         for (int i = 0; i < carData.length; i++) {
             String key = String.format("CAR%d", i);
 
-            Car car = genson.deserialize(carData[i], Car.class);
+            Invoice car = genson.deserialize(carData[i], Invoice.class);
             String carState = genson.serialize(car);
             stub.putStringState(key, carState);
+
         }
     }
 
@@ -108,25 +101,25 @@ public final class FabCar implements ContractInterface {
      *
      * @param ctx the transaction context
      * @param key the key for the new car
-     * @param make the make of the new car
-     * @param model the model of the new car
+     * @param rechnungsnummer the rechnungsnummer of the new car
+     * @param empfangen the empfangen of the new car
      * @param color the color of the new car
      * @param owner the owner of the new car
-     * @return the created Car
+     * @return the created Invoice
      */
     @Transaction()
-    public Car createCar(final Context ctx, final String key, final String make, final String model,
+    public Invoice createInvoice(final Context ctx, final String key, final String rechnungsnummer, final Boolean empfangen,
             final String color, final String owner) {
         ChaincodeStub stub = ctx.getStub();
 
         String carState = stub.getStringState(key);
         if (!carState.isEmpty()) {
-            String errorMessage = String.format("Car %s already exists", key);
+            String errorMessage = String.format("Invoice %s already exists", key);
             System.out.println(errorMessage);
-            throw new ChaincodeException(errorMessage, FabCarErrors.CAR_ALREADY_EXISTS.toString());
+            throw new ChaincodeException(errorMessage, FabInvoiceErrors.CAR_ALREADY_EXISTS.toString());
         }
 
-        Car car = new Car(make, model, color, owner);
+        Invoice car = new Invoice(rechnungsnummer, empfangen, color, owner);
         carState = genson.serialize(car);
         stub.putStringState(key, carState);
 
@@ -137,24 +130,24 @@ public final class FabCar implements ContractInterface {
      * Retrieves every car between CAR0 and CAR999 from the ledger.
      *
      * @param ctx the transaction context
-     * @return array of Cars found on the ledger
+     * @return array of Invoices found on the ledger
      */
     @Transaction()
-    public CarQueryResult[] queryAllCars(final Context ctx) {
+    public InvoiceQueryResult[] queryAllInvoices(final Context ctx) {
         ChaincodeStub stub = ctx.getStub();
 
         final String startKey = "CAR0";
         final String endKey = "CAR999";
-        List<CarQueryResult> queryResults = new ArrayList<CarQueryResult>();
+        List<InvoiceQueryResult> queryResults = new ArrayList<InvoiceQueryResult>();
 
         QueryResultsIterator<KeyValue> results = stub.getStateByRange(startKey, endKey);
 
         for (KeyValue result: results) {
-            Car car = genson.deserialize(result.getStringValue(), Car.class);
-            queryResults.add(new CarQueryResult(result.getKey(), car));
+            Invoice car = genson.deserialize(result.getStringValue(), Invoice.class);
+            queryResults.add(new InvoiceQueryResult(result.getKey(), car));
         }
 
-        CarQueryResult[] response = queryResults.toArray(new CarQueryResult[queryResults.size()]);
+        InvoiceQueryResult[] response = queryResults.toArray(new InvoiceQueryResult[queryResults.size()]);
 
         return response;
     }
@@ -165,26 +158,26 @@ public final class FabCar implements ContractInterface {
      * @param ctx the transaction context
      * @param key the key
      * @param newOwner the new owner
-     * @return the updated Car
+     * @return the updated Invoice
      */
     @Transaction()
-    public Car changeCarOwner(final Context ctx, final String key, final String newOwner) {
+    public Invoice changeInvoiceOwner(final Context ctx, final String key, final String newOwner) {
         ChaincodeStub stub = ctx.getStub();
 
         String carState = stub.getStringState(key);
 
         if (carState.isEmpty()) {
-            String errorMessage = String.format("Car %s does not exist", key);
+            String errorMessage = String.format("Invoice %s does not exist", key);
             System.out.println(errorMessage);
-            throw new ChaincodeException(errorMessage, FabCarErrors.CAR_NOT_FOUND.toString());
+            throw new ChaincodeException(errorMessage, FabInvoiceErrors.CAR_NOT_FOUND.toString());
         }
 
-        Car car = genson.deserialize(carState, Car.class);
+        Invoice car = genson.deserialize(carState, Invoice.class);
 
-        Car newCar = new Car(car.getMake(), car.getModel(), car.getColor(), newOwner);
-        String newCarState = genson.serialize(newCar);
-        stub.putStringState(key, newCarState);
+        Invoice newInvoice = new Invoice(car.getRechnungsnummer(), car.getEmpfangen(), car.getColor(), newOwner);
+        String newInvoiceState = genson.serialize(newInvoice);
+        stub.putStringState(key, newInvoiceState);
 
-        return newCar;
+        return newInvoice;
     }
 }
